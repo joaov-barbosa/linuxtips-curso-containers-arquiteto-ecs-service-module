@@ -158,3 +158,7 @@ variable "scale_tracking_requests" {
   description = "Número alvo de solicitações por segundo (TPS) para o rastreamento de escala."
   default     = 0
 }
+
+variable "container_image" {
+  default = "nginx:latest"
+}
