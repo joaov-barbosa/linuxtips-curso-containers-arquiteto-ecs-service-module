@@ -8,6 +8,11 @@ variable "service_name" {
   description = "Nome do serviço a ser utilizado no ECS ou identificador similar."
 }
 
+variable "container_image" {
+  type        = string
+  description = "Imagem com tag para deployment da aplicação no ECS"
+}
+
 variable "cluster_name" {
   type        = string
   description = "Nome do cluster ECS onde o serviço será implantado."
@@ -48,21 +53,18 @@ variable "service_task_execution_role" {
   description = "ARN da role de execução de tarefas do ECS que o serviço usará para executar."
 }
 
-#variable "service_launch_type" {
- # type        = string
-  #description = "Tipo de lançamento para o serviço no ECS, como 'FARGATE' ou 'EC2'."
-#}
 variable "service_launch_type" {
-  type        = list(object({
+  description = "Configuração dos Launch Types pelos capacity providers disponíveis no cluster"
+  type = list(object({
     capacity_provider = string
-    weight = number
+    weight            = number
   }))
-  default = [ {
-     capacity_provider = "FARGATE"
-     weight            = 100
-  } ]
-  description = "Tipo de lançamento para o serviço no ECS, como 'FARGATE' ou 'EC2'."
+  default = [{
+    capacity_provider = "SPOT"
+    weight            = 100
+  }]
 }
+
 variable "service_task_count" {
   type        = number
   description = "Número de instâncias da tarefa a serem executadas simultaneamente no serviço."
@@ -79,24 +81,89 @@ variable "service_healthcheck" {
 }
 
 variable "environment_variables" {
-  type        = list(map(string))
+  type        = list(object({
+    name : string
+    value: string
+  }))
   description = "Lista de variáveis de ambiente que serão passadas para o serviço."
+  default     = []
+}
+
+variable "secrets" {
+  type        = list(object({
+    name : string
+    valueFrom: string
+  }))
+  description = "Lista de secrets do parameter store ou do secrets manager"
+  default     = []
 }
 
 variable "capabilities" {
   type        = list(string)
-  description = "Lista de capacidades necessárias para a execução do serviço, como 'CAP_SYS_ADMIN' para recursos Linux específicos."
+  default     = []
+  description = "Lista de capacidades, como EC2 ou FARGATE"
 }
-variable "scale_type" {}
-variable "task_minimum" {}
-variable "task_maximum" {}
-variable "scale_out_cpu_threshold" {}
-variable "scale_out_adjustment" {}
-variable "scale_out_comparison_operator" {}
-variable "scale_out_statistic" {}
-variable "scale_out_period" {}
-variable "scale_out_evaluation_periods" {}
-variable "scale_out_cooldown" {}
+
+variable "scale_type" {
+  type        = string
+  description = "Tipo de escalabilidade, como 'cpu', 'cpu_tracking' ou 'requests_tracking'."
+  default     = null
+}
+
+variable "task_minimum" {
+  type        = number
+  description = "Número mínimo de tarefas que devem ser executadas pelo serviço."
+  default     = 3
+}
+
+variable "task_maximum" {
+  type        = number
+  description = "Número máximo de tarefas que podem ser executadas pelo serviço."
+  default     = 10
+}
+
+
+variable "scale_out_cpu_threshold" {
+  type        = number
+  description = "Valor de limiar de utilização de CPU que, quando excedido, aciona uma ação de escala para cima, em percentual."
+  default     = 80
+}
+
+variable "scale_out_adjustment" {
+  type        = number
+  description = "Quantidade de tarefas para aumentar durante uma ação de escala para cima."
+  default     = 1
+}
+
+variable "scale_out_comparison_operator" {
+  type        = string
+  description = "Operador de comparação usado para a condição de escala para cima, como 'GreaterThanOrEqualToThreshold'."
+  default     = "GreaterThanOrEqualToThreshold"
+}
+
+variable "scale_out_statistic" {
+  type        = string
+  description = "Estatística usada para a condição de escala para cima, como 'Average' ou 'Sum'."
+  default     = "Average"
+}
+
+variable "scale_out_period" {
+  type        = number
+  description = "Duração do período de avaliação para escala para cima, em segundos."
+  default     = 60
+}
+
+variable "scale_out_evaluation_periods" {
+  type        = number
+  description = "Número de períodos de avaliação necessários para acionar uma escala para cima."
+  default     = 2
+}
+
+variable "scale_out_cooldown" {
+  type        = number
+  description = "Período de cooldown após uma ação de escala para cima, em segundos."
+  default     = 60
+}
 
 variable "scale_in_cpu_threshold" {
   type        = number
@@ -140,7 +207,6 @@ variable "scale_in_cooldown" {
   default     = 120
 }
 
-#TRACKING CPU
 variable "scale_tracking_cpu" {
   type        = number
   description = "Valor de utilização de CPU alvo para o rastreamento de escala, em percentual."
@@ -159,6 +225,14 @@ variable "scale_tracking_requests" {
   default     = 0
 }
 
-variable "container_image" {
-  default = "nginx:latest"
+variable "efs_volumes" {
+  type = list(object({
+    volume_name : string
+    file_system_id : string
+    file_system_root : string
+    mount_point : string
+    read_only : bool
+  }))
+  description = "Volumes EFS existentes para serem montados nas tasks do ECS"
+  default = []
 }
