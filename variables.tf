@@ -240,3 +240,23 @@ variable "efs_volumes" {
 variable "service_discovery_namespace"{
   default = null
 }
+
+variable "service_protocol"{
+  default=null
+}
+
+variable "protocol"{
+  default= "tcp"
+}
+
+variable "service_connect_name"{
+  default=null
+}
+
+variable "service_connect_arn"{
+  default=null
+}
+
+variable "use_service_connect"{
+  default=false
+}

@@ -29,6 +29,25 @@ resource "aws_ecs_service" "main" {
      }
    
   }
+  dynamic "service_connect_configuration" {
+    for_each = var.use_service_connect ? [var.service_connect_name] : []
+
+    content {
+      enabled   = var.use_service_connect
+      namespace = var.service_connect_name
+
+      service {
+        port_name      = var.service_name
+        discovery_name = var.service_name
+
+        client_alias {
+          port     = var.service_port
+          dns_name = format("%s.%s", var.service_name, var.service_connect_name)
+        }
+      }
+
+    }
+  }
   deployment_maximum_percent         = 200
   deployment_minimum_healthy_percent = 100
 
