@@ -33,6 +33,96 @@ variable "service_port" {
   description = "Porta na qual o serviço estará acessível."
 }
 
+variable "use_lb" {
+  type        = bool
+  default     = true
+  description = "Habilita a exposição do serviço via load balancer"
+}
+
+variable "service_protocol" {
+  description = "Protocolo de serviço utilizado, como http, https, grpc ou tcp."
+  type        = string
+  default     = null
+}
+
+variable "protocol" {
+  description = "Protocolo a ser usado nas comunicações, como tcp ou udp."
+  type        = string
+  default     = "tcp"
+}
+
+variable "use_service_connect" {
+  description = "Habilita ou desabilita o uso do Service Connect."
+  type        = bool
+  default     = false
+}
+
+variable "deployment_controller" {
+  type    = string
+  default = "ECS"
+  description = "Define o tipo de controlador de deployment. O padrão é ECS. Aceita os valores ECS e CODE_DEPLOY"
+}
+
+variable "codedeploy_strategy" {
+  type    = string
+  default = "CodeDeployDefault.ECSAllAtOnce"
+  description = "Define a estratégia de deployment do CodeDeploy. O padrão é ECSAllAtOnce."
+}
+
+variable "codedeploy_deployment_option" {
+  type    = string
+  default = "WITH_TRAFFIC_CONTROL"
+  description = "Define a opção de deployment para o CodeDeploy. O padrão é WITH_TRAFFIC_CONTROL."
+}
+
+variable "codedeploy_deployment_type" {
+  type    = string
+  default = "BLUE_GREEN"
+  description = "Define o tipo de deployment do CodeDeploy. O padrão é BLUE_GREEN."
+}
+
+variable "codedeploy_termination_wait_time_in_minutes" {
+  type    = number
+  default = 5
+  description = "Define o tempo de espera, em minutos, para a terminação das tasks antigas em um deployment BLUE/GREEN. O padrão é 5 minutos."
+}
+
+variable "codedeploy_rollback_alarm" {
+  type = bool
+  default = true
+  description = "Define se o rollback será acionado com base em alarmes do CloudWatch. O padrão é true."
+}
+
+variable "codedeploy_rollback_error_threshold" {
+  type    = number
+  default = 10
+  description = "Define o limite percentual de erros que aciona o rollback. O padrão é 10%."
+}
+
+variable "codedeploy_rollback_error_period" {
+  type = number
+  default = 60
+  description = "Define o período de tempo, em segundos, para avaliar o erro durante o rollback. O padrão é 60 segundos."
+}
+
+variable "codedeploy_rollback_error_evaluation_period" {
+  type    = number
+  default = 1
+  description = "Define o número de períodos de avaliação antes de acionar o rollback. O padrão é 1 período."
+}
+
+variable "service_connect_name" {
+  description = "Nome do Service Connect."
+  type        = string
+  default     = null
+}
+
+variable "service_connect_arn" {
+  description = "ARN do Service Connect."
+  type        = string
+  default     = null
+}
+
 variable "service_cpu" {
   type        = number
   description = "Quantidade de CPU alocada para o serviço, especificada em unidades de CPU do ECS."
@@ -45,6 +135,7 @@ variable "service_memory" {
 
 variable "service_listener" {
   type        = string
+  default     = null
   description = "ARN do listener do Application Load Balancer que será usado pelo serviço."
 }
 
@@ -81,18 +172,18 @@ variable "service_healthcheck" {
 }
 
 variable "environment_variables" {
-  type        = list(object({
+  type = list(object({
     name : string
-    value: string
+    value : string
   }))
   description = "Lista de variáveis de ambiente que serão passadas para o serviço."
   default     = []
 }
 
 variable "secrets" {
-  type        = list(object({
+  type = list(object({
     name : string
-    valueFrom: string
+    valueFrom : string
   }))
   description = "Lista de secrets do parameter store ou do secrets manager"
   default     = []
@@ -234,9 +325,10 @@ variable "efs_volumes" {
     read_only : bool
   }))
   description = "Volumes EFS existentes para serem montados nas tasks do ECS"
-  default = []
+  default     = []
 }
 
-variable "service_discovery_namespace"{
-  default = null
+variable "service_discovery_namespace" {
+  description = "Namespace ID do Service Discovery"
+  default     = null
 }
