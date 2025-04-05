@@ -32,10 +32,15 @@ resource "aws_ecs_service" "main" {
   deployment_maximum_percent         = 200
   deployment_minimum_healthy_percent = 100
 
-  deployment_circuit_breaker {
-    enable   = true
-    rollback = true
+   deployment_controller {
+    type = var.deployment_controller
   }
+
+  deployment_circuit_breaker {
+    enable   = var.deployment_controller == "ECS" ? true : false
+    rollback = var.deployment_controller == "ECS" ? true : false
+  }
+  
   dynamic "ordered_placement_strategy" {
     for_each =  var.service_launch_type == "EC2" ? [1] : []
     content {
@@ -43,6 +48,14 @@ resource "aws_ecs_service" "main" {
       field = "attribute:ecs.availability-zone"
     }
   
+  }
+
+  dynamic "service_registries" {
+    for_each = var.service_discovery_namespace != null ? [var.service_name] : []
+    content {
+      registry_arn   = aws_service_discovery_service.main[0].arn
+      container_name = service_registries.value
+    }
   }
 
   network_configuration {

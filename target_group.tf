@@ -1,4 +1,5 @@
 resource "aws_alb_target_group" "main" {
+  count = (var.use_lb && var.deployment_controller == "ECS") ? 1 : 0
   #name = format("%s-%s", var.cluster_name, var.service_name)
   name   = substr(sha256(format("%s%s", var.service_name, var.cluster_name)), 0, 32)
   port   = var.service_port
