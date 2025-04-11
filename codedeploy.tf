@@ -51,14 +51,14 @@ resource "aws_codedeploy_deployment_group" "main" {
   }
   auto_rollback_configuration {
     enabled = true
-    events  =  ["DEPLOYMENT_FAILURE", "DEPLOYMENT_STOP_ON_ALARM"]
+    events  = ["DEPLOYMENT_FAILURE", "DEPLOYMENT_STOP_ON_ALARM"]
   }
 
   alarm_configuration {
     enabled = var.codedeploy_rollback_alarm
 
-    alarms =  var.codedeploy_rollback_alarm ? [
-        aws_cloudwatch_metric_alarm.rollback_alarm[count.index].id 
-    ] : [ ]
+    alarms = var.codedeploy_rollback_alarm ? [
+      aws_cloudwatch_metric_alarm.rollback_alarm[count.index].id
+    ] : []
   }
 }
