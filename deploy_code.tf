@@ -14,7 +14,7 @@ resource "null_resource" "deploy_codedeploy" {
   count = var.deployment_controller == "CODE_DEPLOY" ? 1 : 0
 
   provisioner "local-exec" {
-    command = "aws deploy create-deployment --cli-input-yaml file://${path.module}/${aws_codedeploy_app.main[count.index].name}.yaml"
+    command = "aws deploy create-deployment --application-name linuxtips-ecs-cluster-chip --cli-input-yaml file://${path.module}/${aws_codedeploy_app.main[count.index].name}.yaml"
     environment = {
       AWS_REGION = var.region
     }
